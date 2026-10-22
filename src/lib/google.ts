@@ -1,4 +1,4 @@
-import { google } from 'googleapis';
+import { google, Auth } from 'googleapis';
 
 const SERVICE_ACCOUNT_SCOPES = [
   'https://www.googleapis.com/auth/spreadsheets',
@@ -18,7 +18,7 @@ export function getGoogleAuth() {
 
 export async function getSheetsClient() {
   const auth = getGoogleAuth();
-  const authClient = await auth.getClient();
+  const authClient = await auth.getClient() as Auth.JWT;
   return google.sheets({ version: 'v4', auth: authClient });
 }
 
@@ -51,7 +51,7 @@ export async function getDriveClient() {
   // 2. Fallback to Service Account if available
   if (process.env.GOOGLE_SERVICE_ACCOUNT_JSON) {
     const auth = getGoogleAuth();
-    const authClient = await auth.getClient();
+    const authClient = await auth.getClient() as Auth.JWT;
     return google.drive({ version: 'v3', auth: authClient });
   }
 

@@ -50,7 +50,7 @@ async function resolveSheetInfo(
     const match = sheetsList.find(
       (s) => s.properties?.title?.toLowerCase() === preferred.toLowerCase()
     );
-    if (match?.properties?.title && match.properties.sheetId !== undefined) {
+    if (match?.properties?.title && match.properties.sheetId != null) {
       return { name: match.properties.title, id: match.properties.sheetId };
     }
   }
