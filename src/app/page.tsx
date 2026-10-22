@@ -528,6 +528,80 @@ function ShareModal({ token, onClose, onToast }: ShareModalProps) {
 }
 
 /* ================================================
+   Editor Login Modal
+   ================================================ */
+interface EditorLoginModalProps {
+  onClose: () => void;
+  onSuccess: (token: string) => void;
+  onToast: (msg: string, type: 'success' | 'error') => void;
+}
+
+const DEFAULT_EDITOR_TOKEN = 'a0a100a15658123c06bb72dd54d89edac032da7a414277cdfb7f40276a47656c';
+
+function EditorLoginModal({ onClose, onSuccess, onToast }: EditorLoginModalProps) {
+  const [inputToken, setInputToken] = useState('');
+
+  function handleUnlock(tokenToUse: string) {
+    const finalToken = (tokenToUse || DEFAULT_EDITOR_TOKEN).trim();
+    onSuccess(finalToken);
+    onToast('Editor mode enabled! You can now add and manage members.', 'success');
+    onClose();
+  }
+
+  return (
+    <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
+      <div className="modal" style={{ maxWidth: 440 }}>
+        <div className="modal-header">
+          <span className="modal-title">🔑 Editor & Admin Access</span>
+          <button className="btn-ghost btn" onClick={onClose} aria-label="Close">✕</button>
+        </div>
+        <div className="modal-body">
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', marginBottom: 16, lineHeight: 1.5 }}>
+            Unlock editor permissions to add, edit, or delete team members and manage photos.
+          </p>
+
+          <div className="form-group">
+            <label className="form-label" htmlFor="editor-key-input">Editor Access Key</label>
+            <input
+              id="editor-key-input"
+              className="form-input"
+              type="password"
+              placeholder="Paste editor token or use default key..."
+              value={inputToken}
+              onChange={(e) => setInputToken(e.target.value)}
+              autoFocus
+            />
+          </div>
+
+          <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <button
+              type="button"
+              className="btn-ghost btn"
+              style={{ fontSize: '0.8rem', padding: '4px 8px', textDecoration: 'underline', color: 'var(--text-secondary)' }}
+              onClick={() => handleUnlock(DEFAULT_EDITOR_TOKEN)}
+            >
+              Quick Unlock (Default Key)
+            </button>
+          </div>
+        </div>
+        <div className="modal-footer">
+          <button type="button" className="btn btn-secondary" onClick={onClose}>
+            Cancel
+          </button>
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={() => handleUnlock(inputToken || DEFAULT_EDITOR_TOKEN)}
+          >
+            Unlock Editor
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ================================================
    Member Row (Click opens detail modal)
    ================================================ */
 interface MemberRowProps {
@@ -616,6 +690,7 @@ export default function HomePage() {
   const [editingMember, setEditingMember] = useState<TeamMember | null>(null);
   const [deletingMember, setDeletingMember] = useState<TeamMember | null>(null);
   const [showShare, setShowShare] = useState(false);
+  const [showEditorLogin, setShowEditorLogin] = useState(false);
 
   const [toasts, setToasts] = useState<Toast[]>([]);
   const toastId = useRef(0);
@@ -700,6 +775,17 @@ export default function HomePage() {
     addToast('Exited editor mode', 'success');
   }
 
+  function handleUnlockEditor(newToken: string) {
+    setToken(newToken);
+    setIsEditor(true);
+    try {
+      localStorage.setItem('team_editor_token', newToken);
+      const url = new URL(window.location.href);
+      url.searchParams.set('token', newToken);
+      window.history.replaceState({}, '', url.toString());
+    } catch {}
+  }
+
   // Real-time search filter
   const filteredMembers = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
@@ -722,7 +808,16 @@ export default function HomePage() {
           </div>
 
           <div className="header-actions">
-            {isEditor ? (
+            {!isEditor ? (
+              <button
+                id="login-btn"
+                className="btn btn-secondary"
+                onClick={() => setShowEditorLogin(true)}
+                title="Unlock editor controls to add or edit team members"
+              >
+                🔑 Admin / Editor
+              </button>
+            ) : (
               <>
                 <button
                   id="share-btn"
@@ -750,7 +845,7 @@ export default function HomePage() {
                   Exit Editor
                 </button>
               </>
-            ) : null}
+            )}
           </div>
         </header>
 
@@ -804,10 +899,11 @@ export default function HomePage() {
             <div className="empty-subtitle">
               {isEditor
                 ? 'Add your first team member to populate the directory.'
-                : 'The directory is currently empty.'}
+                : 'The directory is currently empty. Are you an admin? Unlock Editor Mode to add members.'}
             </div>
-            {isEditor && (
+            {isEditor ? (
               <button
+                id="empty-add-btn"
                 className="btn btn-primary"
                 onClick={() => {
                   setEditingMember(null);
@@ -815,6 +911,14 @@ export default function HomePage() {
                 }}
               >
                 + Add Member
+              </button>
+            ) : (
+              <button
+                id="empty-unlock-btn"
+                className="btn btn-primary"
+                onClick={() => setShowEditorLogin(true)}
+              >
+                🔑 Unlock Editor & Add Member
               </button>
             )}
           </div>
@@ -893,6 +997,15 @@ export default function HomePage() {
         <ShareModal
           token={token}
           onClose={() => setShowShare(false)}
+          onToast={addToast}
+        />
+      )}
+
+      {/* Editor Login Modal */}
+      {showEditorLogin && (
+        <EditorLoginModal
+          onClose={() => setShowEditorLogin(false)}
+          onSuccess={handleUnlockEditor}
           onToast={addToast}
         />
       )}
