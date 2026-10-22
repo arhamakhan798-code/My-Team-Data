@@ -1,0 +1,30 @@
+# Dependencies
+node_modules/
+.next/
+out/
+
+# Environment secrets — NEVER commit these
+.env
+.env.local
+.env.*.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+
+# Service account JSON files and client secrets — keep them out of git
+*.json
+!package.json
+!package-lock.json
+!tsconfig.json
+!vercel.json
+
+# Logs & temp
+*.log
+npm-debug.log*
+scripts/verify-result.txt
+
