@@ -1,4 +1,5 @@
-import { google, Auth } from 'googleapis';
+import { google } from 'googleapis';
+import { GoogleAuth } from 'google-auth-library';
 
 const SERVICE_ACCOUNT_SCOPES = [
   'https://www.googleapis.com/auth/spreadsheets',
@@ -9,17 +10,17 @@ export const DRIVE_OAUTH_SCOPES = [
   'https://www.googleapis.com/auth/drive.file',
 ];
 
-export function getGoogleAuth() {
+export function getGoogleAuth(): GoogleAuth {
   const raw = process.env.GOOGLE_SERVICE_ACCOUNT_JSON;
   if (!raw) throw new Error('GOOGLE_SERVICE_ACCOUNT_JSON env var is not set');
   const credentials = JSON.parse(raw);
-  return new google.auth.GoogleAuth({ credentials, scopes: SERVICE_ACCOUNT_SCOPES });
+  return new GoogleAuth({ credentials, scopes: SERVICE_ACCOUNT_SCOPES });
 }
 
-export async function getSheetsClient() {
+// Pass GoogleAuth directly — avoids the TypeScript overload mismatch with getClient()
+export function getSheetsClient() {
   const auth = getGoogleAuth();
-  const authClient = await auth.getClient() as Auth.JWT;
-  return google.sheets({ version: 'v4', auth: authClient });
+  return google.sheets({ version: 'v4', auth });
 }
 
 export function getOAuth2Client() {
@@ -51,8 +52,7 @@ export async function getDriveClient() {
   // 2. Fallback to Service Account if available
   if (process.env.GOOGLE_SERVICE_ACCOUNT_JSON) {
     const auth = getGoogleAuth();
-    const authClient = await auth.getClient() as Auth.JWT;
-    return google.drive({ version: 'v3', auth: authClient });
+    return google.drive({ version: 'v3', auth });
   }
 
   throw new Error(

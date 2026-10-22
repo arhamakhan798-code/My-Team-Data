@@ -37,7 +37,7 @@ const DEFAULT_HEADER = [
  * Resolves the target sheet tab name and sheet ID.
  */
 async function resolveSheetInfo(
-  sheets: Awaited<ReturnType<typeof getSheetsClient>>
+  sheets: ReturnType<typeof getSheetsClient>
 ): Promise<{ name: string; id: number }> {
   const meta = await sheets.spreadsheets.get({ spreadsheetId: SHEET_ID });
   const sheetsList = meta.data.sheets || [];
@@ -66,7 +66,7 @@ async function resolveSheetInfo(
  * Reads and ensures headers exist in the sheet, returning the resolved ColumnMap.
  */
 async function getOrCreateColumnMap(
-  sheets: Awaited<ReturnType<typeof getSheetsClient>>,
+  sheets: ReturnType<typeof getSheetsClient>,
   sheetName: string
 ): Promise<ColumnMap> {
   const resp = await sheets.spreadsheets.values.get({
@@ -135,7 +135,7 @@ function parseRow(row: string[], colMap: ColumnMap, fallbackIndex: number): Team
 }
 
 export async function getAllMembers(): Promise<TeamMember[]> {
-  const sheets = await getSheetsClient();
+  const sheets = getSheetsClient();
   const { name: sheetName } = await resolveSheetInfo(sheets);
   const colMap = await getOrCreateColumnMap(sheets, sheetName);
 
@@ -153,7 +153,7 @@ export async function getAllMembers(): Promise<TeamMember[]> {
 export async function addMember(
   data: Omit<TeamMember, 'id' | 'createdAt' | 'updatedAt'>
 ): Promise<TeamMember> {
-  const sheets = await getSheetsClient();
+  const sheets = getSheetsClient();
   const { name: sheetName } = await resolveSheetInfo(sheets);
   const colMap = await getOrCreateColumnMap(sheets, sheetName);
 
@@ -203,7 +203,7 @@ export async function updateMember(
   id: string,
   data: Partial<Omit<TeamMember, 'id' | 'createdAt'>>
 ): Promise<TeamMember> {
-  const sheets = await getSheetsClient();
+  const sheets = getSheetsClient();
   const { name: sheetName } = await resolveSheetInfo(sheets);
   const colMap = await getOrCreateColumnMap(sheets, sheetName);
 
@@ -261,7 +261,7 @@ export async function updateMember(
 }
 
 export async function deleteMember(id: string): Promise<void> {
-  const sheets = await getSheetsClient();
+  const sheets = getSheetsClient();
   const { name: sheetName, id: sheetId } = await resolveSheetInfo(sheets);
   const colMap = await getOrCreateColumnMap(sheets, sheetName);
 
