@@ -922,23 +922,45 @@ interface EditorLoginModalProps {
   onToast: (msg: string, type: 'success' | 'error') => void;
 }
 
-const DEFAULT_EDITOR_TOKEN = 'a0a100a15658123c06bb72dd54d89edac032da7a414277cdfb7f40276a47656c';
-
 function EditorLoginModal({ onClose, onSuccess, onToast }: EditorLoginModalProps) {
   const [inputToken, setInputToken] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  function handleUnlock(tokenToUse: string) {
-    const finalToken = (tokenToUse || DEFAULT_EDITOR_TOKEN).trim();
-    onSuccess(finalToken);
-    onToast('Editor mode enabled! You can now add, reorder, and manage members.', 'success');
-    onClose();
+  async function handleUnlock() {
+    const trimmed = inputToken.trim();
+    if (!trimmed) {
+      setError('Please enter the secret access key.');
+      return;
+    }
+    setError('');
+    setLoading(true);
+    try {
+      const res = await fetch('/api/auth/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: trimmed }),
+      });
+      if (!res.ok) {
+        setError('Incorrect secret access key. Access denied.');
+        setLoading(false);
+        return;
+      }
+      onSuccess(trimmed);
+      onToast('Editor mode enabled! You can now add, reorder, and manage members.', 'success');
+      onClose();
+    } catch {
+      setError('Verification failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
     <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div className="modal" style={{ maxWidth: 440 }}>
         <div className="modal-header">
-          <span className="modal-title">🔑 Editor & Admin Access</span>
+          <span className="modal-title">🔑 Editor &amp; Admin Access</span>
           <button className="btn-ghost btn" onClick={onClose} aria-label="Close">✕</button>
         </div>
         <div className="modal-body">
@@ -947,39 +969,33 @@ function EditorLoginModal({ onClose, onSuccess, onToast }: EditorLoginModalProps
           </p>
 
           <div className="form-group">
-            <label className="form-label" htmlFor="editor-key-input">Editor Access Key</label>
+            <label className="form-label" htmlFor="editor-key-input">Secret Access Key</label>
             <input
               id="editor-key-input"
               className="form-input"
               type="password"
-              placeholder="Paste editor token or use default key..."
+              placeholder="Enter secret access key..."
               value={inputToken}
-              onChange={(e) => setInputToken(e.target.value)}
+              onChange={(e) => { setInputToken(e.target.value); setError(''); }}
+              onKeyDown={(e) => e.key === 'Enter' && handleUnlock()}
               autoFocus
             />
-          </div>
-
-          <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <button
-              type="button"
-              className="btn-ghost btn"
-              style={{ fontSize: '0.8rem', padding: '4px 8px', textDecoration: 'underline', color: 'var(--text-secondary)' }}
-              onClick={() => handleUnlock(DEFAULT_EDITOR_TOKEN)}
-            >
-              Quick Unlock (Default Key)
-            </button>
+            {error && (
+              <p style={{ color: '#f87171', fontSize: '0.8rem', marginTop: 6 }}>{error}</p>
+            )}
           </div>
         </div>
         <div className="modal-footer">
-          <button type="button" className="btn btn-secondary" onClick={onClose}>
+          <button type="button" className="btn btn-secondary" onClick={onClose} disabled={loading}>
             Cancel
           </button>
           <button
             type="button"
             className="btn btn-primary"
-            onClick={() => handleUnlock(inputToken || DEFAULT_EDITOR_TOKEN)}
+            onClick={handleUnlock}
+            disabled={loading}
           >
-            Unlock Editor
+            {loading ? 'Verifying…' : 'Unlock Editor'}
           </button>
         </div>
       </div>
@@ -1144,25 +1160,34 @@ export default function HomePage() {
   const [toasts, setToasts] = useState<Toast[]>([]);
   const toastId = useRef(0);
 
-  // Read editor token from URL or localStorage
+  // Read editor token from URL or localStorage, then verify server-side
   useEffect(() => {
-    try {
-      const params = new URLSearchParams(window.location.search);
-      const urlToken = params.get('token');
-      if (urlToken) {
-        setToken(urlToken);
-        setIsEditor(true);
-        localStorage.setItem('team_editor_token', urlToken);
-      } else {
-        const saved = localStorage.getItem('team_editor_token');
-        if (saved) {
-          setToken(saved);
+    async function restoreEditorSession() {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const urlToken = params.get('token');
+        const candidateToken = urlToken || localStorage.getItem('team_editor_token') || '';
+        if (!candidateToken) return;
+
+        const res = await fetch('/api/auth/verify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token: candidateToken }),
+        });
+
+        if (res.ok) {
+          setToken(candidateToken);
           setIsEditor(true);
+          localStorage.setItem('team_editor_token', candidateToken);
+        } else {
+          // Token invalid — clear stored session
+          localStorage.removeItem('team_editor_token');
         }
+      } catch {
+        // LocalStorage might be restricted or network unavailable
       }
-    } catch {
-      // LocalStorage might be restricted
     }
+    restoreEditorSession();
   }, []);
 
   // Fetch directory members and custom fields
