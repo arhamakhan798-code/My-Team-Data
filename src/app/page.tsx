@@ -302,7 +302,7 @@ function AddFieldModal({ token, onClose, onFieldAdded, onToast }: AddFieldModalP
         <form onSubmit={handleSubmit}>
           <div className="modal-body">
             <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: 16 }}>
-              Add a custom attribute to member profiles (e.g. Age, Department, Phone, Location). This creates a new column in your Google Sheet.
+              Add a custom attribute to member profiles (e.g. Age, Department, Phone, Location).
             </p>
 
             <div className="form-group">
@@ -1310,6 +1310,7 @@ export default function HomePage() {
         <header className="page-header">
           <div>
             <h1 className="page-title">Our Team</h1>
+            <p className="page-subtitle">Meet the people behind our work</p>
           </div>
 
           <div className="header-actions">
