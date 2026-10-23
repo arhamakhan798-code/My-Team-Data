@@ -64,11 +64,18 @@ html, body {
    ============================ */
 .app-wrapper {
   min-height: 100vh;
-  background-image: url('/bg-stars.jpg');
+  background-image: url('/bg-desktop.jpg');
   background-size: cover;
   background-position: center;
   background-attachment: fixed;
   position: relative;
+}
+
+@media (max-width: 768px) {
+  .app-wrapper {
+    background-image: url('/bg-mobile.jpg');
+    background-attachment: scroll;
+  }
 }
 
 .app-wrapper::before {
@@ -77,9 +84,9 @@ html, body {
   inset: 0;
   background: linear-gradient(
     135deg,
-    rgba(5, 8, 16, 0.85) 0%,
-    rgba(10, 15, 35, 0.75) 50%,
-    rgba(5, 8, 16, 0.85) 100%
+    rgba(5, 8, 16, 0.75) 0%,
+    rgba(10, 15, 35, 0.65) 50%,
+    rgba(5, 8, 16, 0.75) 100%
   );
   pointer-events: none;
   z-index: 0;
@@ -909,4 +916,228 @@ html, body {
     left: 16px;
     max-width: none;
   }
+}
+
+/* ============================
+   Reorder buttons
+   ============================ */
+.reorder-btns {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 2px 4px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  margin-right: 4px;
+}
+
+.reorder-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 0.75rem;
+  transition: all 0.15s ease;
+}
+
+.reorder-btn:hover:not(:disabled) {
+  background: var(--surface-2);
+  color: var(--accent);
+}
+
+.reorder-btn:disabled {
+  opacity: 0.25;
+  cursor: not-allowed;
+}
+
+.reorder-btn.top-btn {
+  font-size: 0.7rem;
+  font-weight: 700;
+  width: auto;
+  padding: 0 5px;
+}
+
+/* ============================
+   Lightbox / Big Picture Modal
+   ============================ */
+.lightbox-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(2, 4, 10, 0.9);
+  backdrop-filter: blur(12px);
+  z-index: 250;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  animation: fadeIn 0.2s ease;
+}
+
+.lightbox-content {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 90vw;
+  max-height: 90vh;
+}
+
+.lightbox-image {
+  max-width: min(520px, 85vw);
+  max-height: 60vh;
+  object-fit: contain;
+  border-radius: var(--radius-xl);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.8), 0 0 40px var(--accent-glow);
+  border: 2px solid var(--border-strong);
+}
+
+.lightbox-footer {
+  margin-top: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  max-width: min(520px, 85vw);
+  gap: 16px;
+}
+
+.lightbox-caption {
+  display: flex;
+  flex-direction: column;
+}
+
+.lightbox-name {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.lightbox-role {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.lightbox-close-btn {
+  position: absolute;
+  top: -46px;
+  right: 0;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--border);
+  color: #fff;
+  border-radius: var(--radius-full);
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  transition: all 0.2s ease;
+}
+
+.lightbox-close-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* ============================
+   Custom Fields List
+   ============================ */
+.custom-fields-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 16px;
+  width: 100%;
+}
+
+@media (max-width: 480px) {
+  .custom-fields-list {
+    grid-template-columns: 1fr;
+  }
+}
+
+.custom-field-badge {
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.custom-field-label {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 2px;
+}
+
+.custom-field-val {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  word-break: break-word;
+}
+
+/* ============================
+   Share Modal Enhanced
+   ============================ */
+.share-tabs-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.share-card {
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+}
+
+.share-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.share-card-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.share-badge {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+}
+
+.share-badge.public {
+  background: rgba(52, 211, 153, 0.15);
+  color: var(--success);
+  border: 1px solid rgba(52, 211, 153, 0.3);
+}
+
+.share-badge.editor {
+  background: rgba(251, 191, 36, 0.15);
+  color: var(--warning);
+  border: 1px solid rgba(251, 191, 36, 0.3);
+}
+
+.share-desc {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-bottom: 10px;
 }

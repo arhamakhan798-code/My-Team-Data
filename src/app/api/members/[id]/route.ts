@@ -20,6 +20,7 @@ export async function PATCH(
     let linkedinUrl: string | undefined;
     let newPhotoFileId: string | undefined;
     let removePhoto = false;
+    let customFields: Record<string, string> | undefined;
 
     if (contentType.includes('multipart/form-data')) {
       const formData = await req.formData();
@@ -49,12 +50,19 @@ export async function PATCH(
         }
         newPhotoFileId = '';
       }
+      const customFieldsJson = formData.get('customFields') as string;
+      if (customFieldsJson) {
+        try {
+          customFields = JSON.parse(customFieldsJson);
+        } catch {}
+      }
     } else {
       const body = await req.json();
       name = body.name;
       role = body.role;
       linkedinUrl = body.linkedinUrl;
       newPhotoFileId = body.photoFileId;
+      customFields = body.customFields;
     }
 
     if (name !== undefined && !name.trim()) {
@@ -63,8 +71,11 @@ export async function PATCH(
     if (role !== undefined && !role.trim()) {
       return NextResponse.json({ error: 'Role cannot be empty' }, { status: 400 });
     }
+    if (linkedinUrl !== undefined && !linkedinUrl.trim()) {
+      return NextResponse.json({ error: 'LinkedIn URL cannot be empty' }, { status: 400 });
+    }
 
-    const updates: Record<string, string> = {};
+    const updates: Partial<Parameters<typeof updateMember>[1]> = {};
     if (name !== undefined) updates.name = name.trim();
     if (role !== undefined) updates.role = role.trim();
     if (linkedinUrl !== undefined) {
@@ -75,6 +86,7 @@ export async function PATCH(
       updates.linkedinUrl = formatted;
     }
     if (newPhotoFileId !== undefined) updates.photoFileId = newPhotoFileId;
+    if (customFields !== undefined) updates.customFields = customFields;
 
     const updated = await updateMember(id, updates);
     return NextResponse.json({ member: updated });

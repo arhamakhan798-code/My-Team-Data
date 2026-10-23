@@ -28,12 +28,22 @@ export async function POST(req: NextRequest) {
     let role = '';
     let linkedinUrl = '';
     let photoFileId = '';
+    let customFields: Record<string, string> = {};
 
     if (contentType.includes('multipart/form-data')) {
       const formData = await req.formData();
       name = (formData.get('name') as string) || '';
       role = (formData.get('role') as string) || '';
       linkedinUrl = (formData.get('linkedinUrl') as string) || '';
+
+      const customFieldsJson = formData.get('customFields') as string;
+      if (customFieldsJson) {
+        try {
+          customFields = JSON.parse(customFieldsJson);
+        } catch {
+          // ignore
+        }
+      }
 
       const photo = formData.get('photo') as File | null;
       if (photo && photo.size > 0) {
@@ -49,6 +59,7 @@ export async function POST(req: NextRequest) {
       role = body.role || '';
       linkedinUrl = body.linkedinUrl || '';
       photoFileId = body.photoFileId || '';
+      customFields = body.customFields || {};
     }
 
     if (!name.trim()) {
@@ -56,6 +67,9 @@ export async function POST(req: NextRequest) {
     }
     if (!role.trim()) {
       return NextResponse.json({ error: 'Role is required' }, { status: 400 });
+    }
+    if (!linkedinUrl.trim()) {
+      return NextResponse.json({ error: 'LinkedIn URL is required' }, { status: 400 });
     }
 
     // Normalize LinkedIn URL
@@ -69,6 +83,7 @@ export async function POST(req: NextRequest) {
       role: role.trim(),
       linkedinUrl: formattedLinkedin,
       photoFileId,
+      customFields,
     });
 
     return NextResponse.json({ member }, { status: 201 });
