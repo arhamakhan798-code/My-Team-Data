@@ -1310,7 +1310,6 @@ export default function HomePage() {
         <header className="page-header">
           <div>
             <h1 className="page-title">Our Team</h1>
-            <p className="page-subtitle">Meet the people behind our work</p>
           </div>
 
           <div className="header-actions">
