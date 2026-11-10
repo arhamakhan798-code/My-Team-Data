@@ -7,7 +7,7 @@ const SERVICE_ACCOUNT_SCOPES = [
 ];
 
 export const DRIVE_OAUTH_SCOPES = [
-  'https://www.googleapis.com/auth/drive.file',
+  'https://www.googleapis.com/auth/drive',
 ];
 
 export function getGoogleAuth(): GoogleAuth {
