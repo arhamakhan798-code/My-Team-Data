@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { updateMember, deleteMember, getAllMembers } from '@/lib/sheets';
-import { uploadPhoto, deletePhoto } from '@/lib/drive';
+import { uploadPhoto, deletePhoto } from '@/lib/photos';
 import { requireEditorToken } from '@/lib/auth';
 
 // PATCH /api/members/[id] — update a member

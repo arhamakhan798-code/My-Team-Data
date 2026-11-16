@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAllMembers, addMember } from '@/lib/sheets';
-import { uploadPhoto } from '@/lib/drive';
+import { uploadPhoto } from '@/lib/photos';
 import { requireEditorToken } from '@/lib/auth';
 
 // GET /api/members — list all members (public read)

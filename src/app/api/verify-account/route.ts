@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
-import { getSheetsClient, getDriveClient } from '@/lib/google';
+import { getSheetsClient } from '@/lib/google';
+import fs from 'fs';
+import path from 'path';
 
 export const dynamic = 'force-dynamic';
 
@@ -23,59 +25,22 @@ export async function GET() {
     };
   }
 
-  // 2. Google Drive status (OAuth 2.0 Web Client)
-  const hasOAuthClientId = !!process.env.GOOGLE_OAUTH_CLIENT_ID;
-  const hasRefreshToken = !!(process.env.GOOGLE_OAUTH_REFRESH_TOKEN && process.env.GOOGLE_OAUTH_REFRESH_TOKEN.trim());
-  const driveMode = hasRefreshToken
-    ? 'OAuth 2.0 (drive.file)'
-    : process.env.GOOGLE_SERVICE_ACCOUNT_JSON
-    ? 'Service Account (Fallback)'
-    : 'Not Authorized';
-
-  results.googleDriveMode = driveMode;
-  results.googleOAuthSetup = {
-    hasClientId: hasOAuthClientId,
-    hasRefreshToken: hasRefreshToken,
-    authorizeUrl: '/api/auth/google',
-  };
-
+  // 2. Local Photo Storage status
+  const photosDir = path.join(process.cwd(), 'public', 'photos');
+  let photoCount = 0;
   try {
-    const drive = await getDriveClient();
-    const folderId = process.env.GOOGLE_DRIVE_FOLDER_ID;
-    if (folderId) {
-      try {
-        const folderRes = await drive.files.get({
-          fileId: folderId,
-          fields: 'id, name, mimeType',
-          supportsAllDrives: true,
-        });
-        results.googleDrive = {
-          status: 'CONNECTED',
-          folderName: folderRes.data.name,
-          folderId: folderRes.data.id,
-        };
-      } catch {
-        // Under drive.file scope, files.get on older external folders may 404, but client works
-        results.googleDrive = {
-          status: 'CONNECTED',
-          note: 'Drive OAuth client active. Uploads will save to target folder or Drive root.',
-        };
-      }
-    } else {
-      results.googleDrive = {
-        status: 'CONNECTED',
-        note: 'Drive OAuth client active. Uploads will save to Drive root.',
-      };
+    if (fs.existsSync(photosDir)) {
+      photoCount = fs.readdirSync(photosDir).filter((f) => !f.endsWith('.json')).length;
     }
-  } catch (err: unknown) {
-    results.googleDrive = {
-      status: hasRefreshToken ? 'FAILED' : 'NEEDS_AUTHORIZATION',
-      error: (err as Error).message,
-      actionRequired: !hasRefreshToken
-        ? 'Please open http://localhost:3000/api/auth/google in your browser to grant Drive access.'
-        : undefined,
-    };
+  } catch {
+    // ignore
   }
+
+  results.photoStorage = {
+    status: 'READY',
+    mode: 'Local Backend Storage',
+    totalPhotos: photoCount,
+  };
 
   return NextResponse.json(results);
 }

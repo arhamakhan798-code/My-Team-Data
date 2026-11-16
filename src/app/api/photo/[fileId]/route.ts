@@ -1,64 +1,31 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getPhotoStream, extractDriveFileId } from '@/lib/drive';
-import { Readable } from 'stream';
+import { getPhotoBuffer } from '@/lib/photos';
 
-// GET /api/photo/[fileId] — proxy Drive photo through backend
-// This keeps Drive files private and avoids exposing service account credentials.
+export const dynamic = 'force-dynamic';
+
+// GET /api/photo/[fileId] — serves member photo directly from backend static storage
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ fileId: string }> | { fileId: string } }
 ) {
   const rawParams = await Promise.resolve(params);
-  const fileId = extractDriveFileId(rawParams.fileId);
+  const fileId = rawParams.fileId ? decodeURIComponent(rawParams.fileId).trim() : '';
 
   if (!fileId) {
     return new NextResponse('Missing fileId', { status: 400 });
   }
 
   try {
-    const { stream, contentType } = await getPhotoStream(fileId);
+    const photo = await getPhotoBuffer(fileId);
 
-    // Convert Node Readable to Web ReadableStream
-    let webStream: ReadableStream;
-    if (typeof (Readable as unknown as { toWeb: (s: NodeJS.ReadableStream) => ReadableStream }).toWeb === 'function') {
-      webStream = (Readable as unknown as { toWeb: (s: NodeJS.ReadableStream) => ReadableStream }).toWeb(stream);
-    } else {
-      webStream = new ReadableStream({
-        start(controller) {
-          stream.on('data', (chunk: Buffer) => {
-            try {
-              controller.enqueue(chunk);
-            } catch {
-              // controller may be closed if client disconnected
-            }
-          });
-          stream.on('end', () => {
-            try {
-              controller.close();
-            } catch {
-              // ignore
-            }
-          });
-          stream.on('error', (err) => {
-            try {
-              controller.error(err);
-            } catch {
-              // ignore
-            }
-          });
-        },
-        cancel() {
-          if ('destroy' in stream && typeof stream.destroy === 'function') {
-            stream.destroy();
-          }
-        },
-      });
+    if (!photo) {
+      return new NextResponse('Photo not found', { status: 404 });
     }
 
-    return new NextResponse(webStream, {
+    return new NextResponse(photo.buffer, {
       headers: {
-        'Content-Type': contentType,
-        'Cache-Control': 'public, max-age=3600, stale-while-revalidate=86400',
+        'Content-Type': photo.contentType,
+        'Cache-Control': 'public, max-age=31536000, immutable',
       },
     });
   } catch (err: unknown) {

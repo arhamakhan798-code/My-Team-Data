@@ -777,7 +777,7 @@ function ConfirmModal({ member, token, onClose, onDeleted, onToast }: ConfirmMod
         </div>
         <div className="confirm-body">
           Are you sure you want to remove <span className="confirm-name">{member.name}</span> from the directory?
-          This will also remove their profile photo from Google Drive.
+          This will also remove their profile photo.
         </div>
         <div className="modal-footer">
           <button className="btn btn-secondary" onClick={onClose} disabled={deleting}>
