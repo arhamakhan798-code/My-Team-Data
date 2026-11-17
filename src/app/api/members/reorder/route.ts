@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { reorderMembers } from '@/lib/sheets';
 import { requireEditorToken } from '@/lib/auth';
 
+export const dynamic = 'force-dynamic';
+
 // POST /api/members/reorder — save reordered member IDs (requires editor token)
 export async function POST(req: NextRequest) {
   const authError = requireEditorToken(req);

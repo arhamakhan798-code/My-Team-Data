@@ -1,0 +1,5 @@
+▲ Next.js 16.4.2 (Turbopack)
+- Environments: .env.local
+✓ Running next.config.ts took 3.5s
+
+  Creating an optimized production build ...

@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { validateEditorToken } from '@/lib/auth';
 
+export const dynamic = 'force-dynamic';
+
 // GET /api/share — get share links (view-only public, editor link if authorized)
 export async function GET(req: NextRequest) {
   const origin = req.nextUrl.origin || process.env.NEXT_PUBLIC_APP_URL || '';

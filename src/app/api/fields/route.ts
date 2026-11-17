@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getCustomFields, addCustomField } from '@/lib/sheets';
 import { requireEditorToken } from '@/lib/auth';
 
+export const dynamic = 'force-dynamic';
+
 // GET /api/fields — list custom fields
 export async function GET() {
   try {

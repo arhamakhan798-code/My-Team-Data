@@ -111,7 +111,6 @@ export async function uploadPhoto(
   const primaryDir = path.join(process.cwd(), 'public', 'photos');
   const fallbackDir = path.join('/tmp', 'photos');
 
-  let targetDir = primaryDir;
   try {
     if (!fs.existsSync(primaryDir)) {
       fs.mkdirSync(primaryDir, { recursive: true });
@@ -119,7 +118,6 @@ export async function uploadPhoto(
     fs.writeFileSync(path.join(primaryDir, uniqueName), buffer);
   } catch {
     // If primaryDir is read-only (e.g. Vercel serverless), write to /tmp/photos
-    targetDir = fallbackDir;
     if (!fs.existsSync(fallbackDir)) {
       fs.mkdirSync(fallbackDir, { recursive: true });
     }

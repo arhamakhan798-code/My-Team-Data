@@ -3,6 +3,8 @@ import { getAllMembers, addMember } from '@/lib/sheets';
 import { uploadPhoto } from '@/lib/photos';
 import { requireEditorToken } from '@/lib/auth';
 
+export const dynamic = 'force-dynamic';
+
 // GET /api/members — list all members (public read)
 export async function GET() {
   try {

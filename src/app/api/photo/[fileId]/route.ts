@@ -6,10 +6,10 @@ export const dynamic = 'force-dynamic';
 // GET /api/photo/[fileId] — serves member photo directly from backend static storage
 export async function GET(
   _req: NextRequest,
-  { params }: { params: Promise<{ fileId: string }> | { fileId: string } }
+  props: { params: Promise<{ fileId: string }> }
 ) {
-  const rawParams = await Promise.resolve(params);
-  const fileId = rawParams.fileId ? decodeURIComponent(rawParams.fileId).trim() : '';
+  const params = await props.params;
+  const fileId = params?.fileId ? decodeURIComponent(params.fileId).trim() : '';
 
   if (!fileId) {
     return new NextResponse('Missing fileId', { status: 400 });

@@ -3,15 +3,18 @@ import { updateMember, deleteMember, getAllMembers } from '@/lib/sheets';
 import { uploadPhoto, deletePhoto } from '@/lib/photos';
 import { requireEditorToken } from '@/lib/auth';
 
+export const dynamic = 'force-dynamic';
+
 // PATCH /api/members/[id] — update a member
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> | { id: string } }
+  props: { params: Promise<{ id: string }> }
 ) {
   const authError = requireEditorToken(req);
   if (authError) return authError;
 
-  const { id } = await Promise.resolve(params);
+  const params = await props.params;
+  const id = params.id;
 
   try {
     const contentType = req.headers.get('content-type') || '';
@@ -102,12 +105,13 @@ export async function PATCH(
 // DELETE /api/members/[id] — delete a member and their photo
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> | { id: string } }
+  props: { params: Promise<{ id: string }> }
 ) {
   const authError = requireEditorToken(req);
   if (authError) return authError;
 
-  const { id } = await Promise.resolve(params);
+  const params = await props.params;
+  const id = params.id;
 
   try {
     const members = await getAllMembers();
